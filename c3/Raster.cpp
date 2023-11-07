@@ -2,6 +2,7 @@
 #include <fstream>
 #include "Color.h"
 #include "Raster.h"
+#include "Model.h"
 #include <cstring>
 #include <stdio.h>
 #include <string.h>
@@ -66,7 +67,7 @@ Color Raster::getColorPixel(int x, int y) {
 
 //takes three inputs and sets a single pixel to the color
 void Raster::setColorPixel(int x, int y, Color pFillColor) {
-  if (y >= 0 && y < height) {
+  if ((y >= 0 && y < height) && (x >= 0 && x < width)) {
     pixels[(x * height) + y] = pFillColor;
   }
 }
@@ -205,61 +206,195 @@ void Raster::drawTriangle2D_DotProduct(Triangle2D t) {
   }
 }
 
-void Raster::drawTriangle_Barycentric(Triangle2D t) {
-  float minX;
-  float maxX;
-  float minY;
-  float maxY;
 
-  // gets smallest x
-  if (t.v1.x <= t.v2.x && t.v1.x <= t.v3.x) {
-    minX = t.v1.x;
-  } else if (t.v2.x <= t.v1.x && t.v2.x <= t.v3.x) {
-    minX = t.v2.x;
-  } else {
-    minX = t.v3.x;
-  }
-  // gets largest x
-  if (t.v1.x >= t.v2.x && t.v1.x >= t.v3.x) {
-    maxX = t.v1.x;
-  } else if (t.v2.x >= t.v1.x && t.v2.x >= t.v3.x) {
-    maxX = t.v2.x;
-  } else {
-    maxX = t.v3.x;
-  }
-  //gets smallest y
-  if (t.v1.y <= t.v2.y && t.v1.y <= t.v3.y) {
-    minY = t.v1.y;
-  } else if (t.v2.y <= t.v1.y && t.v2.y <= t.v3.y) {
-    minY = t.v2.y;
-  } else {
-    minY = t.v3.y;
-  }
-  // gets largest y
-  if (t.v1.y >= t.v2.y && t.v1.y >= t.v3.y) {
-    maxY = t.v1.y;
-  } else if (t.v2.y >= t.v1.y && t.v2.y >= t.v3.y) {
-    maxY = t.v2.y;
-  } else {
-    maxY = t.v3.y;
-  }
 
-  float lambda1;
-  float lambda2;
-  float lambda3;
 
-  //Checks within bounding box and sets pixels within triangle
-  for (int x = minX; x < maxX; x++) {
-    for (int y = minY; y < maxY; y++) {
-      Vector2 p(x, y);
-      t.calculateBarycentricCoordinates(p, lambda1, lambda2, lambda3);
-      if ((lambda1 >= 0) && (lambda2 >= 0) && (lambda3 >= 0)) {
-        // setColorPixel(x, y, Color(lambda1, lambda2, lambda3));
-        setColorPixel(x, y, (t.c1*lambda1 + t.c2*lambda2 + t.c3*lambda3));
-      } 
+// void Raster::drawTriangle3D_Barycentric(Triangle3D t) {
+//   float minX;
+//   float maxX;
+//   float minY;
+//   float maxY;
+
+//   // gets smallest x
+//   cout << "first if" << endl;
+//   if (t.v1.x <= t.v2.x && t.v1.x <= t.v3.x) {
+//     minX = t.v1.x;
+//   } else if (t.v2.x <= t.v1.x && t.v2.x <= t.v3.x) {
+//     minX = t.v2.x;
+//   } else {
+//     minX = t.v3.x;
+//   }
+  
+//   // gets largest x
+//   cout << "second if" << endl;
+//   if (t.v1.x >= t.v2.x && t.v1.x >= t.v3.x) {
+//     maxX = t.v1.x;
+//   } else if (t.v2.x >= t.v1.x && t.v2.x >= t.v3.x) {
+//     maxX = t.v2.x;
+//   } else {
+//     maxX = t.v3.x;
+//   }
+//     cout << "third if" << endl;
+//   //gets smallest y
+//   if (t.v1.y <= t.v2.y && t.v1.y <= t.v3.y) {
+//     minY = t.v1.y;
+//   } else if (t.v2.y <= t.v1.y && t.v2.y <= t.v3.y) {
+//     minY = t.v2.y;
+//   } else {
+//     minY = t.v3.y;
+//   }
+//     cout << "fourth if" << endl;
+//   // gets largest y
+//   if (t.v1.y >= t.v2.y && t.v1.y >= t.v3.y) {
+//     maxY = t.v1.y;
+//   } else if (t.v2.y >= t.v1.y && t.v2.y >= t.v3.y) {
+//     maxY = t.v2.y;
+//   } else {
+//     maxY = t.v3.y;
+//   }
+
+//   float lambda1;
+//   float lambda2;
+//   float lambda3;
+
+//   Triangle2D t2(t);
+
+//   //Checks within bounding box and sets pixels within triangle
+//   Vector2 p;
+//   for (int x = minX; x < maxX; x++) {
+//     cout << "in first for loop" << endl;
+//     for (int y = minY; y < maxY; y++) {
+//       p = Vector2(x, y);
+//       cout << "in second for loop" << endl;
+//       t2.calculateBarycentricCoordinates(p, lambda1, lambda2, lambda3);
+//       cout << "after calc bary" << endl;
+//       if ((lambda1 >= 0) && (lambda2 >= 0) && (lambda3 >= 0)) {
+//         cout << "setting color" << endl;
+//         // setColorPixel(x, y, Color(lambda1, lambda2, lambda3));
+//         setColorPixel(x, y, (t.c1*lambda1 + t.c2*lambda2 + t.c3*lambda3));
+//         cout << "after set color" << endl;
+//       } 
+//     }
+//   }
+// }
+
+
+void Raster::drawTriangle3D_Barycentric(Triangle3D t) {
+
+  // Triangle2D convert(t);
+
+  float xMin = min(t.v1.x, min(t.v2.x, t.v3.x));
+  float xMax = max(t.v1.x, max(t.v2.x, t.v3.x));
+  float yMin = min(t.v1.y, min(t.v2.y, t.v3.y));
+  float yMax = max(t.v1.y, max(t.v2.y, t.v3.y));
+
+  for (int x = xMin; x <= xMax; x++) {
+    for (int y = yMin; y <= yMax; y++) {
+
+      float lambda1;
+      float lambda2;
+      float lambda3;
+
+      // T has 3 Vector4 sides and three colors
+      // this code makes error so temporaly hiding
+      t.calculateBarycentricCoordinates(Vector4((x), (y), 0, 0), lambda1, lambda2, lambda3);
+      if (lambda1 >= 0 && lambda2 >= 0 && lambda3 >= 0 && x >= 0) { //} && x < getWidth() && y >= 0 && y < getHeight()) {
+          // cout << xMin << " " << yMin << " " << xMax << " " << yMax << endl;
+          // cout << x << " " << y << endl;
+        setColorPixel(x, y, Color(t.c1*lambda1 + t.c2*lambda2 + t.c3*lambda3));
+        //cout << "one point is done" << endl;
+      }
     }
   }
 }
+
+// void Raster::drawTriangle3D_Barycentric(Triangle3D t) {
+//   float minX = min(t.v1.x, min(t.v2.x, t.v3.x));
+//   float maxX = max(t.v1.x, max(t.v2.x, t.v3.x));
+//   float minY = min(t.v1.y, min(t.v2.y, t.v3.y));
+//   float maxY = max(t.v1.y, max(t.v2.y, t.v3.y));
+
+//   // gets smallest x
+//   // cout << "first if" << endl;
+//   // if (t.v1.x <= t.v2.x && t.v1.x <= t.v3.x) {
+//   //   minX = t.v1.x;
+//   // } else if (t.v2.x <= t.v1.x && t.v2.x <= t.v3.x) {
+//   //   minX = t.v2.x;
+//   // } else {
+//   //   minX = t.v3.x;
+//   // }
+  
+//   // // gets largest x
+//   // cout << "second if" << endl;
+//   // if (t.v1.x >= t.v2.x && t.v1.x >= t.v3.x) {
+//   //   maxX = t.v1.x;
+//   // } else if (t.v2.x >= t.v1.x && t.v2.x >= t.v3.x) {
+//   //   maxX = t.v2.x;
+//   // } else {
+//   //   maxX = t.v3.x;
+//   // }
+//   //   cout << "third if" << endl;
+//   // //gets smallest y
+//   // if (t.v1.y <= t.v2.y && t.v1.y <= t.v3.y) {
+//   //   minY = t.v1.y;
+//   // } else if (t.v2.y <= t.v1.y && t.v2.y <= t.v3.y) {
+//   //   minY = t.v2.y;
+//   // } else {
+//   //   minY = t.v3.y;
+//   // }
+//   //   cout << "fourth if" << endl;
+//   // // gets largest y
+//   // if (t.v1.y >= t.v2.y && t.v1.y >= t.v3.y) {
+//   //   maxY = t.v1.y;
+//   // } else if (t.v2.y >= t.v1.y && t.v2.y >= t.v3.y) {
+//   //   maxY = t.v2.y;
+//   // } else {
+//   //   maxY = t.v3.y;
+//   // }
+
+//   float lambda1;
+//   float lambda2;
+//   float lambda3;
+
+//   Triangle2D convert(t);
+
+//   //Checks within bounding box and sets pixels within triangle
+//   // Vector2 p;
+//   for (int x = minX; x <= maxX; x+= 1.0f) {
+//     // cout << "in first for loop" << endl;
+//     for (int y = minY; y <= maxY; y+= 1.0f) {
+//       // p = Vector2(x, y);
+//       // cout << "in second for loop" << endl;
+//       t.calculateBarycentricCoordinates(Vector4((x), (y), 0, 0), lambda1, lambda2, lambda3);
+//       // cout << "after calc bary" << endl;
+//       if ((lambda1 >= 0) && (lambda2 >= 0) && (lambda3 >= 0) && x < getWidth() && y >= 0 && y < getHeight()) {
+//         // cout << "setting color" << endl;
+//         // setColorPixel(x, y, Color(lambda1, lambda2, lambda3));
+//         cout << minX << " " << minY << " " << maxX << " " << maxY << endl;
+//         cout << x << " " << y << endl;
+//         setColorPixel(x, y, (t.c1*lambda1 + t.c2*lambda2 + t.c3*lambda3));
+//         // cout << "after set color" << endl;
+//       } 
+//     }
+//   }
+// }
+
+
+
+
+void Raster::drawModel(Model m) {
+  // cout << "outside draw for loop" << endl;
+  for (int i = 0; i < m.numTriangles(); i++) {
+    // cout << "inside for loop, before draw" << endl;
+    // cout << i << endl;
+    drawTriangle3D_Barycentric(m[i]);
+    // m[i].v1.print();
+    // m[i].v2.print();
+    // m[i].v3.print();
+    // cout << "inside for loop, after draw" << endl;
+  }
+}
+
 
 
 //Normal: Red in corner, turns black than fades blue
